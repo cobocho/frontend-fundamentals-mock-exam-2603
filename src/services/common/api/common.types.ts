@@ -6,3 +6,21 @@ export const mutationResponseScheme = z.discriminatedUnion('ok', [
 ]);
 
 export type MutationResponse = z.infer<typeof mutationResponseScheme>;
+
+export interface HttpRequestOptions {
+  json?: unknown;
+  searchParams?: Record<string, string | number>;
+  headers?: Record<string, string>;
+  signal?: AbortSignal;
+  timeout?: number;
+  retry?: number;
+  credentials?: RequestCredentials;
+}
+
+export interface HttpInstance {
+  get: <T = unknown>(url: string, options?: HttpRequestOptions) => Promise<T>;
+  post: <T = unknown>(url: string, options?: HttpRequestOptions) => Promise<T>;
+  put: <T = unknown>(url: string, options?: HttpRequestOptions) => Promise<T>;
+  patch: <T = unknown>(url: string, options?: HttpRequestOptions) => Promise<T>;
+  delete: <T = unknown>(url: string, options?: HttpRequestOptions) => Promise<T>;
+}
