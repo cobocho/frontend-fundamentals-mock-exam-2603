@@ -9,3 +9,8 @@ export const roomScheme = z.object({
 });
 
 export type Room = z.infer<typeof roomScheme>;
+
+// GET /api/rooms
+export const getRoomsResponseScheme = z.array(roomScheme);
+
+export type GetRoomsResponse = z.infer<typeof getRoomsResponseScheme>;
