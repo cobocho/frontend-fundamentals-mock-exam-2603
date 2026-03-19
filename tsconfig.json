@@ -36,7 +36,9 @@
       "styles/*": ["styles/*"],
       "utils/*": ["utils/*"],
       "hooks/*": ["hooks/*"],
-      "stores/*": ["stores/*"]
+      "stores/*": ["stores/*"],
+      "services/*": ["services/*"],
+      "services": ["services/index"]
     }
   },
   "include": ["src"],

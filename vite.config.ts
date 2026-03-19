@@ -20,8 +20,10 @@ export default defineConfig({
     }),
   ],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       _tosslib: path.resolve(__dirname, 'src/_tosslib'),
+      services: path.resolve(__dirname, 'src/services'),
       pages: path.resolve(__dirname, 'src/pages'),
       containers: path.resolve(__dirname, 'src/containers'),
       components: path.resolve(__dirname, 'src/components'),
