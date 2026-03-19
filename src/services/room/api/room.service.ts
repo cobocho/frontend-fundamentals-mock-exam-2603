@@ -1,10 +1,13 @@
-import { httpInstance, type BaseService, type HttpInstance } from 'services/common';
+import { httpInstance } from 'services/common';
+import type { BaseService, HttpInstance, HttpRequestOptions } from 'services/common';
 import { type GetRoomsResponse } from './rooms.types';
 
 export class RoomService implements BaseService {
-  constructor(public httpInstance: HttpInstance) {}
+  constructor(private readonly httpInstance: HttpInstance) {}
 
-  getRooms(): Promise<GetRoomsResponse> {
-    return this.httpInstance.get<GetRoomsResponse>('api/rooms');
-  }
+  getRooms = (options?: HttpRequestOptions): Promise<GetRoomsResponse> => {
+    return this.httpInstance.get<GetRoomsResponse>('api/rooms', options);
+  };
 }
+
+export const roomService = new RoomService(httpInstance);

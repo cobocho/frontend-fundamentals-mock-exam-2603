@@ -1,4 +1,4 @@
-export { mutationResponseScheme, type MutationResponse, type HttpInstance } from './api';
+export { mutationResponseScheme, type MutationResponse, type HttpInstance, type HttpRequestOptions } from './api';
 export { httpInstance } from './api/ky';
 export {
   HttpError,
