@@ -1,0 +1,1 @@
+export { getFloorsByRooms } from './room';

@@ -10,8 +10,8 @@ export const reservationScheme = z.object({
   id: z.string(),
   roomId: roomScheme.shape.id,
   date: z.iso.date(),
-  start: z.iso.time(),
-  end: z.iso.time(),
+  start: z.string(), // HH:mm
+  end: z.string(), // HH:mm
   attendees: z.number(),
   equipment: z.array(equipmentScheme),
 });
@@ -33,8 +33,8 @@ export type GetReservationsResponse = z.infer<typeof getReservationsResponseSche
 export const postReservationRequestScheme = z.object({
   roomId: roomScheme.shape.id,
   date: z.iso.date(),
-  start: z.iso.time(),
-  end: z.iso.time(),
+  start: z.string(), // HH:mm
+  end: z.string(), // HH:mm
   attendees: z.number(),
   equipment: z.array(equipmentScheme),
 });

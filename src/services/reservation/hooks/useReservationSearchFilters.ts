@@ -8,8 +8,8 @@ import { formatDate } from 'utils/date';
 export const reservationSearchScheme = z
   .object({
     date: postReservationRequestScheme.shape.date,
-    start: postReservationRequestScheme.shape.start.nullish(),
-    end: postReservationRequestScheme.shape.end.nullish(),
+    start: postReservationRequestScheme.shape.start,
+    end: postReservationRequestScheme.shape.end,
     attendees: postReservationRequestScheme.shape.attendees
       .min(MIN_ATTENDEES, { message: '참석 인원은 1명 이상이어야 합니다.' })
       .max(MAX_ATTENDEES),
@@ -32,7 +32,7 @@ export const reservationSearchScheme = z
     }
   });
 
-export type ReservationSearchScheme = z.infer<typeof reservationSearchScheme>;
+export type ReservationSearch = z.infer<typeof reservationSearchScheme>;
 
 const queryStatesConfig = {
   date: parseAsString.withDefault(formatDate(new Date())),
@@ -57,5 +57,9 @@ export function useReservationSearchFilters() {
 
   const parsed = reservationSearchScheme.safeParse(filters);
 
-  return { isValid: parsed.success, errors: parsed.error, filters, setFilter };
+  if (parsed.success) {
+    return { isValid: true as const, filters: parsed.data, setFilter };
+  }
+
+  return { isValid: false as const, filters, setFilter };
 }

@@ -1,15 +1,34 @@
 import { css } from '@emotion/react';
-import { Top, Spacing, Text } from '_tosslib/components';
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { PostReservationRequest, reservationQueries, reservationService } from 'services/reservation';
+import { Top, Spacing, Text, Border, Button } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { useNavigate } from 'react-router-dom';
 import { ReservationSearchForm, useReservationSearchFilters } from 'services/reservation';
+import { Room, roomQueries } from 'services/room';
+import { getFloorsByRooms } from 'services/room/libs';
+import { AvailableRoomList } from './components/AvailableRoomList';
+import { Suspense, useState } from 'react';
 
 export function RoomBookingPage() {
   const navigate = useNavigate();
-  const { isValid, errors, filters, setFilter } = useReservationSearchFilters();
+  const queryClient = useQueryClient();
 
-  console.log(isValid);
-  console.log(errors);
+  const { filters, isValid, setFilter } = useReservationSearchFilters();
+  const createMutation = useMutation({
+    mutationFn: reservationService.postReservation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: reservationQueries.all() });
+    },
+  });
+
+  if (isValid) {
+    queryClient.prefetchQuery(reservationQueries.list({ date: filters.date }));
+  }
+
+  const { data: rooms } = useSuspenseQuery(roomQueries.list());
+
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
   return (
     <div css={containerStyle}>
@@ -26,9 +45,14 @@ export function RoomBookingPage() {
         </Text>
         <Spacing size={16} />
         <ReservationSearchForm
-          floors={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+          floors={getFloorsByRooms(rooms)}
           onChange={({ values }) => {
-            setFilter(values);
+            setFilter({
+              ...values,
+              start: values.start || null,
+              end: values.end || null,
+              preferredFloor: values.preferredFloor || null,
+            });
           }}
           initialValues={{
             date: filters.date,
@@ -39,8 +63,41 @@ export function RoomBookingPage() {
             preferredFloor: filters.preferredFloor,
           }}
         />
-        <Spacing size={16} />
       </div>
+      <Spacing size={24} />
+      <Border size={8} />
+      <Spacing size={24} />
+      <Suspense>
+        {isValid && (
+          <div css={contentStyle}>
+            <AvailableRoomList
+              rooms={rooms}
+              filters={filters}
+              defaultSelectedRoomId={selectedRoom?.id}
+              onSelect={setSelectedRoom}
+            />
+            <Spacing size={16} />
+            <Button
+              display="full"
+              onClick={() => {
+                createMutation.mutate({
+                  roomId: selectedRoom!.id,
+                  date: filters.date,
+                  start: filters.start!,
+                  end: filters.end!,
+                  attendees: filters.attendees,
+                  equipment: filters.equipment,
+                });
+                setSelectedRoom(null);
+                navigate('/');
+              }}
+              disabled={createMutation.isPending || !selectedRoom || !isValid}
+            >
+              {createMutation.isPending ? '예약 중...' : '확정'}
+            </Button>
+          </div>
+        )}
+      </Suspense>
     </div>
   );
 }

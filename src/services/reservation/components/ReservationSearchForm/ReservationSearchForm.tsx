@@ -6,7 +6,7 @@ import { Form, FormField, FormItem, FormLabel } from 'components/Form';
 import { css } from '@emotion/react';
 import { Select, Spacing } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-import { useEffect, useEffectEvent, useMemo } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef } from 'react';
 import { getTimeOptions, getToday } from './ReservationSearchForm.lib';
 import { EQUIPMENT_OPTIONS } from 'services/room/constants';
 import {
@@ -169,7 +169,7 @@ export const ReservationSearchForm = ({
                 <input
                   type="number"
                   value={field.value}
-                  onChange={e => field.onChange(e.target.value)}
+                  onChange={e => field.onChange(e.target.valueAsNumber)}
                   aria-label="참석 인원"
                   min={reservationSearchScheme.shape.attendees.minValue || MIN_ATTENDEES}
                   css={inputStyle}

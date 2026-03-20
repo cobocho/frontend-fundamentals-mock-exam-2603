@@ -12,4 +12,4 @@ export { reservationService, ReservationService, reservationQueries } from './ap
 export { ReservationSearchForm } from './components';
 export type { ReservationSearchFormProps } from './components';
 export { useReservationSearchFilters, reservationSearchScheme } from './hooks';
-export type { ReservationSearchScheme } from './hooks';
+export type { ReservationSearch } from './hooks';

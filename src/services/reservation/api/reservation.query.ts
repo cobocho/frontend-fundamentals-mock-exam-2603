@@ -9,10 +9,14 @@ export const reservationQueries = {
     queryOptions({
       queryKey: [...reservationQueries.lists(), params],
       queryFn: () => reservationService.getReservations(params),
+      staleTime: 1000 * 60,
+      gcTime: 1000 * 60,
     }),
   myList: () =>
     queryOptions({
       queryKey: [...reservationQueries.all(), 'myList'],
       queryFn: () => reservationService.getMyReservations(),
+      staleTime: 1000 * 60 * 30,
+      gcTime: 1000 * 60 * 30,
     }),
 };
