@@ -3,6 +3,7 @@ import { css, Global } from '@emotion/react';
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GlobalPortal } from './GlobalPortal';
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';
 
 import '_tosslib/sass/app.scss';
 import { PageLayout } from 'pages/PageLayout';
@@ -35,7 +36,9 @@ export default function App() {
           `}
         />
         <PageLayout>
-          <Routes />
+          <NuqsAdapter>
+            <Routes />
+          </NuqsAdapter>
         </PageLayout>
       </GlobalPortal.Provider>
     </QueryClientProvider>
