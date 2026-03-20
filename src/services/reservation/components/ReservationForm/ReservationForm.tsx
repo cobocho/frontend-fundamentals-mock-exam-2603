@@ -6,10 +6,16 @@ import { Form, FormField, FormItem, FormLabel } from 'components/Form';
 import { css } from '@emotion/react';
 import { Select, Spacing } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-import { EQUIPMENT_LABELS } from 'services/room';
 import { useEffect, useEffectEvent, useMemo } from 'react';
-import { getTimeOptions, isBeforeThan } from './ReservationForm.lib';
+import { getTimeOptions, getToday, isBeforeThan } from './ReservationForm.lib';
 import { EQUIPMENT_OPTIONS } from 'services/room/constants';
+import {
+  DEFAULT_RESERVATION_START_TIME,
+  DEFAULT_RESERVATION_END_TIME,
+  DEFAULT_RESERVATION_TIME_STEP,
+  MAX_ATTENDEES,
+  MIN_ATTENDEES,
+} from '../../constants/config';
 
 export const reservationFormSchema = z
   .object({
@@ -17,12 +23,12 @@ export const reservationFormSchema = z
     date: postReservationRequestScheme.shape.date,
     start: postReservationRequestScheme.shape.start,
     end: postReservationRequestScheme.shape.end,
-    attendees: postReservationRequestScheme.shape.attendees,
+    attendees: postReservationRequestScheme.shape.attendees.min(MIN_ATTENDEES).max(MAX_ATTENDEES),
     equipment: postReservationRequestScheme.shape.equipment,
     preferredFloor: z.number().nullish(),
   })
   .superRefine((data, ctx) => {
-    if (!isBeforeThan(data.start, data.end)) {
+    if (data.start && data.end && !isBeforeThan(data.start, data.end)) {
       ctx.addIssue({
         code: 'custom',
         path: ['root', 'form'],
@@ -35,23 +41,34 @@ export type ReservationFormSchema = z.infer<typeof reservationFormSchema>;
 
 export interface ReservationFormProps {
   floors: number[];
-  startTime: string;
-  endTime: string;
-  timeStep: number;
+  startTime?: string;
+  endTime?: string;
+  timeStep?: number;
+  initialValues?: Partial<ReservationFormSchema>;
   onChange: ({ isValid, values }: { isValid: boolean; values: z.infer<typeof reservationFormSchema> }) => void;
 }
 
-export const ReservationForm = ({ floors, startTime, endTime, timeStep, onChange }: ReservationFormProps) => {
+export const ReservationForm = ({
+  floors,
+  startTime = DEFAULT_RESERVATION_START_TIME,
+  endTime = DEFAULT_RESERVATION_END_TIME,
+  timeStep = DEFAULT_RESERVATION_TIME_STEP,
+  initialValues,
+  onChange,
+}: ReservationFormProps) => {
+  const sortedFloors = useMemo(() => [...floors].sort((a, b) => a - b), [floors]);
+
   const form = useForm({
     resolver: zodResolver(reservationFormSchema),
     mode: 'onChange',
     defaultValues: {
       roomId: '',
-      date: '',
+      date: getToday(),
       start: '',
       end: '',
       attendees: 1,
       equipment: [],
+      ...initialValues,
     },
   });
 
@@ -101,7 +118,6 @@ export const ReservationForm = ({ floors, startTime, endTime, timeStep, onChange
                 <input
                   type="date"
                   value={field.value}
-                  min={new Date().toISOString().split('T')[0]}
                   onChange={e => field.onChange(e.target.value)}
                   aria-label="날짜"
                   css={inputStyle}
@@ -190,7 +206,7 @@ export const ReservationForm = ({ floors, startTime, endTime, timeStep, onChange
                   aria-label="선호 층"
                 >
                   <option value="all">전체</option>
-                  {floors.map(f => (
+                  {sortedFloors.map(f => (
                     <option key={f} value={f}>
                       {f}층
                     </option>

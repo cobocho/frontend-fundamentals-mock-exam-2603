@@ -1,0 +1,9 @@
+export const DEFAULT_RESERVATION_START_TIME = '09:00';
+
+export const DEFAULT_RESERVATION_END_TIME = '18:00';
+
+export const DEFAULT_RESERVATION_TIME_STEP = 30;
+
+export const MIN_ATTENDEES = 1;
+
+export const MAX_ATTENDEES = Number.MAX_SAFE_INTEGER;

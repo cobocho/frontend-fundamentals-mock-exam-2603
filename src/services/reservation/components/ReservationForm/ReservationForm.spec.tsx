@@ -5,9 +5,6 @@ import { ReservationForm, type ReservationFormProps } from './ReservationForm';
 
 const defaultProps: ReservationFormProps = {
   floors: [1, 2, 3],
-  startTime: '09:00',
-  endTime: '18:00',
-  timeStep: 30,
   onChange: vi.fn(),
 };
 
@@ -17,44 +14,39 @@ function renderForm(overrides: Partial<ReservationFormProps> = {}) {
   return props;
 }
 
-function getSelectByIndex(index: number) {
-  return screen.getAllByRole('combobox')[index] as HTMLSelectElement;
-}
-
-function getStartSelect() {
-  return getSelectByIndex(0);
-}
-
-function getEndSelect() {
-  return getSelectByIndex(1);
-}
-
 describe('ReservationForm', () => {
   test('시작 시간 옵션이 timeStep 간격으로 생성된다', () => {
     renderForm({ startTime: '09:00', endTime: '10:00', timeStep: 30 });
 
-    const options = Array.from(getStartSelect().options);
-    const values = options.map(o => o.value).filter(v => v !== '');
+    const startSelect = screen.getByLabelText('시작 시간') as HTMLSelectElement;
+    const values = Array.from(startSelect.options)
+      .map(o => o.value)
+      .filter(v => v !== '');
 
     expect(values).toEqual(['09:00', '09:30', '10:00']);
   });
 
-  test('선호 층 옵션이 floors prop에 따라 생성된다', () => {
-    renderForm({ floors: [5, 10] });
+  test('startTime, endTime, timeStep을 지정하지 않으면 기본값으로 렌더링된다', () => {
+    renderForm();
+
+    const startSelect = screen.getByLabelText('시작 시간') as HTMLSelectElement;
+    const values = Array.from(startSelect.options)
+      .map(o => o.value)
+      .filter(v => v !== '');
+
+    // 기본값: 09:00 ~ 18:00, 30분 간격 → 19개 옵션
+    expect(values[0]).toBe('09:00');
+    expect(values[values.length - 1]).toBe('18:00');
+    expect(values).toHaveLength(19);
+  });
+
+  test('선호 층 옵션이 floors prop에 따라 정렬되어 생성된다', () => {
+    renderForm({ floors: [10, 3, 5] });
 
     const floorSelect = screen.getByLabelText('선호 층') as HTMLSelectElement;
     const texts = Array.from(floorSelect.options).map(o => o.textContent);
 
-    expect(texts).toEqual(['전체', '5층', '10층']);
-  });
-
-  test('날짜 입력의 min 값이 오늘 날짜로 설정된다', () => {
-    renderForm();
-
-    const dateInput = screen.getByLabelText('날짜') as HTMLInputElement;
-    const today = new Date().toISOString().split('T')[0];
-
-    expect(dateInput.min).toBe(today);
+    expect(texts).toEqual(['전체', '3층', '5층', '10층']);
   });
 
   test('참석 인원 기본값이 1이다', () => {
@@ -68,7 +60,7 @@ describe('ReservationForm', () => {
     const user = userEvent.setup();
     const { onChange } = renderForm();
 
-    await user.selectOptions(getStartSelect(), '10:00');
+    await user.selectOptions(screen.getByLabelText('시작 시간'), '10:00');
 
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -117,8 +109,8 @@ describe('ReservationForm', () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.selectOptions(getStartSelect(), '14:00');
-    await user.selectOptions(getEndSelect(), '10:00');
+    await user.selectOptions(screen.getByLabelText('시작 시간'), '14:00');
+    await user.selectOptions(screen.getByLabelText('종료 시간'), '10:00');
 
     expect(await screen.findByText('종료 시간은 시작 시간보다 늦어야 합니다.')).toBeInTheDocument();
   });
@@ -127,9 +119,50 @@ describe('ReservationForm', () => {
     const user = userEvent.setup();
     renderForm();
 
-    await user.selectOptions(getStartSelect(), '10:00');
-    await user.selectOptions(getEndSelect(), '14:00');
+    await user.selectOptions(screen.getByLabelText('시작 시간'), '10:00');
+    await user.selectOptions(screen.getByLabelText('종료 시간'), '14:00');
 
     expect(screen.queryByText('종료 시간은 시작 시간보다 늦어야 합니다.')).not.toBeInTheDocument();
+  });
+
+  test('initialValues를 전달하면 폼이 해당 값으로 초기화된다', () => {
+    renderForm({
+      initialValues: {
+        date: '2026-04-01',
+        start: '10:00',
+        end: '11:00',
+        attendees: 5,
+      },
+    });
+
+    expect((screen.getByLabelText('날짜') as HTMLInputElement).value).toBe('2026-04-01');
+    expect((screen.getByLabelText('시작 시간') as HTMLSelectElement).value).toBe('10:00');
+    expect((screen.getByLabelText('종료 시간') as HTMLSelectElement).value).toBe('11:00');
+    expect((screen.getByLabelText('참석 인원') as HTMLInputElement).value).toBe('5');
+  });
+
+  test('initialValues를 전달하지 않으면 기본값으로 초기화된다', () => {
+    renderForm();
+
+    const today = new Date().toISOString().split('T')[0];
+
+    expect((screen.getByLabelText('날짜') as HTMLInputElement).value).toBe(today);
+    expect((screen.getByLabelText('시작 시간') as HTMLSelectElement).value).toBe('');
+    expect((screen.getByLabelText('종료 시간') as HTMLSelectElement).value).toBe('');
+    expect((screen.getByLabelText('참석 인원') as HTMLInputElement).value).toBe('1');
+  });
+
+  test('initialValues로 일부 필드만 전달하면 나머지는 기본값을 유지한다', () => {
+    renderForm({
+      initialValues: {
+        start: '14:00',
+      },
+    });
+
+    const today = new Date().toISOString().split('T')[0];
+
+    expect((screen.getByLabelText('시작 시간') as HTMLSelectElement).value).toBe('14:00');
+    expect((screen.getByLabelText('날짜') as HTMLInputElement).value).toBe(today);
+    expect((screen.getByLabelText('참석 인원') as HTMLInputElement).value).toBe('1');
   });
 });

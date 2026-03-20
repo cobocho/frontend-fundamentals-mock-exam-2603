@@ -7,7 +7,6 @@ import { ReservationForm } from 'services/reservation';
 
 export function RoomBookingPage() {
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   return (
     <div css={containerStyle}>
@@ -17,30 +16,6 @@ export function RoomBookingPage() {
         </button>
       </div>
       <Top.Top03 css={topStyle}>예약하기</Top.Top03>
-
-      {errorMessage && (
-        <div
-          css={css`
-            padding: 0 24px;
-          `}
-        >
-          <Spacing size={12} />
-          <div
-            css={css`
-              padding: 10px 14px;
-              border-radius: 10px;
-              background: ${colors.red50};
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            `}
-          >
-            <Text typography="t7" fontWeight="medium" color={colors.red500}>
-              {errorMessage}
-            </Text>
-          </div>
-        </div>
-      )}
       <Spacing size={24} />
       <div css={contentStyle}>
         <Text typography="t5" fontWeight="bold" color={colors.grey900}>

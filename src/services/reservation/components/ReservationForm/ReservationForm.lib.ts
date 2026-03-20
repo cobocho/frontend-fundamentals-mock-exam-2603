@@ -4,6 +4,10 @@ interface TimeOption {
   label: string;
 }
 
+export const getToday = (): string => {
+  return new Date().toISOString().split('T')[0];
+};
+
 export function parseTimeToMinutes(time: string): number {
   const [hour, minute] = time.split(':').map(Number);
   return hour * 60 + minute;
