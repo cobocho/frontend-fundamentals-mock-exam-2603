@@ -28,8 +28,8 @@ function toKyOptions(options?: HttpRequestOptions) {
 
 async function handleError(error: unknown): Promise<never> {
   if (error instanceof HTTPError) {
-    const message = await error.response.text();
-    throw createHttpError(error.response.status, message);
+    const data = (await error.response.json()) as { message: string };
+    throw createHttpError(error.response.status, data.message ?? error.message);
   }
   if (error instanceof TimeoutError) {
     throw new HttpTimeoutError();

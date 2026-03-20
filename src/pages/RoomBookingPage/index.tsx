@@ -1,6 +1,6 @@
 import { css } from '@emotion/react';
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { PostReservationRequest, reservationQueries, reservationService } from 'services/reservation';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { reservationQueries, reservationService } from 'services/reservation';
 import { Top, Spacing, Text, Border, Button } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { useNavigate } from 'react-router-dom';
@@ -9,16 +9,26 @@ import { Room, roomQueries } from 'services/room';
 import { getFloorsByRooms } from 'services/room/libs';
 import { AvailableRoomList } from './components/AvailableRoomList';
 import { Suspense, useState } from 'react';
+import { HttpError } from 'services/common';
 
 export function RoomBookingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { filters, isValid, setFilter } = useReservationSearchFilters();
+
   const createMutation = useMutation({
     mutationFn: reservationService.postReservation,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: reservationQueries.all() });
+      setSelectedRoom(null);
+      setBookingError(null);
+      navigate('/', { state: { message: '예약이 완료되었습니다!' } });
+    },
+    onError: error => {
+      if (error instanceof HttpError) {
+        setBookingError(error.message);
+      }
     },
   });
 
@@ -29,6 +39,7 @@ export function RoomBookingPage() {
   const { data: rooms } = useSuspenseQuery(roomQueries.list());
 
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   return (
     <div css={containerStyle}>
@@ -38,6 +49,18 @@ export function RoomBookingPage() {
         </button>
       </div>
       <Top.Top03 css={topStyle}>예약하기</Top.Top03>
+
+      {bookingError && (
+        <div css={contentStyle}>
+          <Spacing size={12} />
+          <div css={bookingErrorBoxStyle}>
+            <Text typography="t7" fontWeight="medium" color={colors.red500}>
+              {bookingError}
+            </Text>
+          </div>
+        </div>
+      )}
+
       <Spacing size={24} />
       <div css={contentStyle}>
         <Text typography="t5" fontWeight="bold" color={colors.grey900}>
@@ -53,6 +76,8 @@ export function RoomBookingPage() {
               end: values.end || null,
               preferredFloor: values.preferredFloor || null,
             });
+            setBookingError(null);
+            setSelectedRoom(null);
           }}
           initialValues={{
             date: filters.date,
@@ -80,6 +105,11 @@ export function RoomBookingPage() {
             <Button
               display="full"
               onClick={() => {
+                if (!selectedRoom) {
+                  setBookingError('회의실을 선택해주세요.');
+                  return;
+                }
+
                 createMutation.mutate({
                   roomId: selectedRoom!.id,
                   date: filters.date,
@@ -88,10 +118,8 @@ export function RoomBookingPage() {
                   attendees: filters.attendees,
                   equipment: filters.equipment,
                 });
-                setSelectedRoom(null);
-                navigate('/');
               }}
-              disabled={createMutation.isPending || !selectedRoom || !isValid}
+              disabled={createMutation.isPending || !isValid}
             >
               {createMutation.isPending ? '예약 중...' : '확정'}
             </Button>
@@ -121,6 +149,15 @@ const goBackButtonStyle = css`
   &:hover {
     color: ${colors.grey900};
   }
+`;
+
+const bookingErrorBoxStyle = css`
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: ${colors.red50};
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const contentStyle = css`
