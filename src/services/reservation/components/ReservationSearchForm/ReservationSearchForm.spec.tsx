@@ -1,22 +1,22 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, test, expect, vi } from 'vitest';
-import { ReservationForm, type ReservationFormProps } from './ReservationForm';
+import { ReservationSearchForm, type ReservationSearchFormProps } from './ReservationSearchForm';
 
-const defaultProps: ReservationFormProps = {
+const defaultProps: ReservationSearchFormProps = {
   floors: [1, 2, 3],
   onChange: vi.fn(),
 };
 
-function renderForm(overrides: Partial<ReservationFormProps> = {}) {
+function renderForm(overrides: Partial<ReservationSearchFormProps> = {}) {
   const props = { ...defaultProps, ...overrides, onChange: vi.fn() };
-  render(<ReservationForm {...props} />);
+  render(<ReservationSearchForm {...props} />);
   return props;
 }
 
-describe('ReservationForm', () => {
+describe('ReservationSearchForm', () => {
   test('시작 시간 옵션이 timeStep 간격으로 생성된다', () => {
-    renderForm({ startTime: '09:00', endTime: '10:00', timeStep: 30 });
+    renderForm({ availableTime: { startTime: '09:00', endTime: '10:00', timeStep: 30 } });
 
     const startSelect = screen.getByLabelText('시작 시간') as HTMLSelectElement;
     const values = Array.from(startSelect.options)

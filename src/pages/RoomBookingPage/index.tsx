@@ -1,12 +1,15 @@
 import { css } from '@emotion/react';
-import { Top, Spacing, Border, Button, Text, Select, ListRow } from '_tosslib/components';
+import { Top, Spacing, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ReservationForm } from 'services/reservation';
+import { ReservationSearchForm, useReservationSearchFilters } from 'services/reservation';
 
 export function RoomBookingPage() {
   const navigate = useNavigate();
+  const { isValid, errors, filters, setFilter } = useReservationSearchFilters();
+
+  console.log(isValid);
+  console.log(errors);
 
   return (
     <div css={containerStyle}>
@@ -22,13 +25,18 @@ export function RoomBookingPage() {
           예약 조건
         </Text>
         <Spacing size={16} />
-        <ReservationForm
+        <ReservationSearchForm
           floors={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-          startTime="09:00"
-          endTime="18:00"
-          timeStep={30}
-          onChange={({ isValid, values }) => {
-            console.log(isValid, values);
+          onChange={({ values }) => {
+            setFilter(values);
+          }}
+          initialValues={{
+            date: filters.date,
+            start: filters.start ?? undefined,
+            end: filters.end ?? undefined,
+            attendees: filters.attendees,
+            equipment: filters.equipment,
+            preferredFloor: filters.preferredFloor,
           }}
         />
         <Spacing size={16} />

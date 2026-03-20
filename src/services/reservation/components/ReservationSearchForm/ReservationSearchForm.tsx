@@ -1,68 +1,49 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Equipment, postReservationRequestScheme } from '../../api/reservation.types';
+import { Equipment } from '../../api/reservation.types';
 import { z } from 'zod';
 import { Form, FormField, FormItem, FormLabel } from 'components/Form';
 import { css } from '@emotion/react';
 import { Select, Spacing } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { useEffect, useEffectEvent, useMemo } from 'react';
-import { getTimeOptions, getToday, isBeforeThan } from './ReservationForm.lib';
+import { getTimeOptions, getToday } from './ReservationSearchForm.lib';
 import { EQUIPMENT_OPTIONS } from 'services/room/constants';
 import {
   DEFAULT_RESERVATION_START_TIME,
   DEFAULT_RESERVATION_END_TIME,
   DEFAULT_RESERVATION_TIME_STEP,
-  MAX_ATTENDEES,
   MIN_ATTENDEES,
 } from '../../constants/config';
+import { reservationSearchScheme, type ReservationSearchScheme } from '../../hooks/useReservationSearchFilters';
 
-export const reservationFormSchema = z
-  .object({
-    roomId: postReservationRequestScheme.shape.roomId,
-    date: postReservationRequestScheme.shape.date,
-    start: postReservationRequestScheme.shape.start,
-    end: postReservationRequestScheme.shape.end,
-    attendees: postReservationRequestScheme.shape.attendees.min(MIN_ATTENDEES).max(MAX_ATTENDEES),
-    equipment: postReservationRequestScheme.shape.equipment,
-    preferredFloor: z.number().nullish(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.start && data.end && !isBeforeThan(data.start, data.end)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['root', 'form'],
-        message: '종료 시간은 시작 시간보다 늦어야 합니다.',
-      });
-    }
-  });
-
-export type ReservationFormSchema = z.infer<typeof reservationFormSchema>;
-
-export interface ReservationFormProps {
+export interface ReservationSearchFormProps {
   floors: number[];
-  startTime?: string;
-  endTime?: string;
-  timeStep?: number;
-  initialValues?: Partial<ReservationFormSchema>;
-  onChange: ({ isValid, values }: { isValid: boolean; values: z.infer<typeof reservationFormSchema> }) => void;
+  availableTime?: {
+    startTime: string;
+    endTime: string;
+    timeStep: number;
+  };
+  initialValues?: Partial<ReservationSearchScheme>;
+  onChange: ({ isValid, values }: { isValid: boolean; values: z.infer<typeof reservationSearchScheme> }) => void;
 }
 
-export const ReservationForm = ({
+export const ReservationSearchForm = ({
   floors,
-  startTime = DEFAULT_RESERVATION_START_TIME,
-  endTime = DEFAULT_RESERVATION_END_TIME,
-  timeStep = DEFAULT_RESERVATION_TIME_STEP,
+  availableTime = {
+    startTime: DEFAULT_RESERVATION_START_TIME,
+    endTime: DEFAULT_RESERVATION_END_TIME,
+    timeStep: DEFAULT_RESERVATION_TIME_STEP,
+  },
   initialValues,
   onChange,
-}: ReservationFormProps) => {
+}: ReservationSearchFormProps) => {
   const sortedFloors = useMemo(() => [...floors].sort((a, b) => a - b), [floors]);
 
   const form = useForm({
-    resolver: zodResolver(reservationFormSchema),
+    resolver: zodResolver(reservationSearchScheme),
     mode: 'onChange',
     defaultValues: {
-      roomId: '',
       date: getToday(),
       start: '',
       end: '',
@@ -72,17 +53,15 @@ export const ReservationForm = ({
     },
   });
 
+  const { errors } = form.formState;
+
   const onChangeEvent = useEffectEvent(onChange);
 
-  useEffect(
-    function handleChange() {
-      const subscription = form.watch(() =>
-        onChangeEvent({ isValid: form.formState.isValid, values: form.getValues() })
-      );
-      return () => subscription.unsubscribe();
-    },
-    [floors, startTime, endTime, timeStep]
-  );
+  useEffect(function handleChange() {
+    form.trigger();
+    const subscription = form.watch(() => onChangeEvent({ isValid: form.formState.isValid, values: form.getValues() }));
+    return () => subscription.unsubscribe();
+  }, []);
 
   const toggleEquipment = (equipment: Equipment) => {
     const prevEquipment = form.getValues('equipment');
@@ -97,7 +76,15 @@ export const ReservationForm = ({
     form.setValue('equipment', [...prevEquipment, equipment]);
   };
 
-  const timeOptions = useMemo(() => getTimeOptions(startTime, endTime, timeStep), [startTime, endTime, timeStep]);
+  const changeTime = (name: 'start' | 'end', value: string) => {
+    form.setValue(name, value === '' ? null : value);
+    form.trigger();
+  };
+
+  const timeOptions = useMemo(
+    () => getTimeOptions(availableTime.startTime, availableTime.endTime, availableTime.timeStep),
+    [availableTime]
+  );
 
   return (
     <Form {...form}>
@@ -135,10 +122,8 @@ export const ReservationForm = ({
               <FormItem>
                 <FormLabel>시작 시간</FormLabel>
                 <Select
-                  value={field.value}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                    field.onChange(e.target.value === '' ? null : e.target.value)
-                  }
+                  value={field.value ?? ''}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTime('start', e.target.value)}
                   aria-label="시작 시간"
                 >
                   <option value="">선택</option>
@@ -158,11 +143,8 @@ export const ReservationForm = ({
               <FormItem>
                 <FormLabel>종료 시간</FormLabel>
                 <Select
-                  value={field.value}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    field.onChange(e.target.value === '' ? null : e.target.value);
-                    form.trigger();
-                  }}
+                  value={field.value ?? ''}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTime('end', e.target.value)}
                   aria-label="종료 시간"
                 >
                   <option value="">선택</option>
@@ -189,6 +171,7 @@ export const ReservationForm = ({
                   value={field.value}
                   onChange={e => field.onChange(e.target.value)}
                   aria-label="참석 인원"
+                  min={reservationSearchScheme.shape.attendees.minValue || MIN_ATTENDEES}
                   css={inputStyle}
                 />
               </FormItem>
@@ -202,10 +185,13 @@ export const ReservationForm = ({
                 <FormLabel>선호 층</FormLabel>
                 <Select
                   value={field.value ?? ''}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    const v = e.target.value;
+                    field.onChange(v === '' ? null : Number(v));
+                  }}
                   aria-label="선호 층"
                 >
-                  <option value="all">전체</option>
+                  <option value="">전체</option>
                   {sortedFloors.map(f => (
                     <option key={f} value={f}>
                       {f}층
@@ -241,7 +227,7 @@ export const ReservationForm = ({
           />
         </div>
       </form>
-      {form.formState.errors.root?.form && <p css={errorStyle}>{form.formState.errors.root.form.message}</p>}
+      {errors.root?.form && <p css={errorStyle}>{errors.root.form.message}</p>}
     </Form>
   );
 };

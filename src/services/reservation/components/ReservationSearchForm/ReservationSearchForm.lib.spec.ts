@@ -1,10 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import {
-  parseTimeToMinutes,
-  formatTimeLabel,
-  getTimeOptions,
-  isBeforeThan,
-} from './ReservationForm.lib';
+import { parseTimeToMinutes, formatTimeLabel, getTimeOptions, isBeforeThan } from './ReservationSearchForm.lib';
 
 describe('parseTimeToMinutes', () => {
   test('시간을 분 단위로 변환한다', () => {
