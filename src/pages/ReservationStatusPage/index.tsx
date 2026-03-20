@@ -6,6 +6,8 @@ import { Top, Spacing, Border, Button, Text, ListRow } from '_tosslib/components
 import { colors } from '_tosslib/constants/colors';
 import { roomQueries } from 'services/room';
 import { reservationQueries, reservationService } from 'services/reservation';
+import { LocationMessage, useLocationMessage } from 'hooks/useLocationMessage';
+import { formatDate } from 'utils/date';
 
 const EQUIPMENT_LABELS: Record<string, string> = {
   tv: 'TV',
@@ -27,13 +29,6 @@ const TIMELINE_START = 9;
 const TIMELINE_END = 20;
 const TOTAL_MINUTES = (TIMELINE_END - TIMELINE_START) * 60;
 
-function formatDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number);
   return (h - TIMELINE_START) * 60 + m;
@@ -41,20 +36,14 @@ function timeToMinutes(time: string): number {
 
 export function ReservationStatusPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const queryClient = useQueryClient();
   const [date, setDate] = useState(formatDate(new Date()));
 
-  const locationState = location.state as { message?: string } | null;
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
-    locationState?.message ? { type: 'success', text: locationState.message } : null
-  );
+  const { locationMessage, createLocationMessage } = useLocationMessage();
 
-  useEffect(() => {
-    if (locationState?.message) {
-      window.history.replaceState({}, '');
-    }
-  }, [locationState]);
+  const [message, setMessage] = useState<LocationMessage | null>(locationMessage);
+
+  console.log(locationMessage, message);
 
   const { data: rooms = [] } = useQuery(roomQueries.list());
   const { data: reservations = [] } = useQuery(reservationQueries.list({ date }));
@@ -70,9 +59,9 @@ export function ReservationStatusPage() {
   const handleCancel = async (id: string) => {
     try {
       await cancelMutation.mutateAsync(id);
-      setMessage({ type: 'success', text: '예약이 취소되었습니다.' });
+      setMessage({ text: '예약이 취소되었습니다.', type: 'success' });
     } catch {
-      setMessage({ type: 'error', text: '취소에 실패했습니다.' });
+      setMessage({ text: '취소에 실패했습니다.', type: 'error' });
     }
   };
 

@@ -10,10 +10,12 @@ import { getFloorsByRooms } from 'services/room/libs';
 import { AvailableRoomList } from './components/AvailableRoomList';
 import { Suspense, useState } from 'react';
 import { HttpError } from 'services/common';
+import { useLocationMessage } from 'hooks/useLocationMessage';
 
 export function RoomBookingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { createLocationMessage } = useLocationMessage();
 
   const { filters, isValid, setFilter } = useReservationSearchFilters();
 
@@ -23,7 +25,7 @@ export function RoomBookingPage() {
       queryClient.invalidateQueries({ queryKey: reservationQueries.all() });
       setSelectedRoom(null);
       setBookingError(null);
-      navigate('/', { state: { message: '예약이 완료되었습니다!' } });
+      navigate('/', { state: createLocationMessage('success', '예약이 완료되었습니다!') });
     },
     onError: error => {
       if (error instanceof HttpError) {
