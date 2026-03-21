@@ -4,14 +4,7 @@ import { Button, ListRow, Spacing, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { reservationQueries } from '../../api';
 import { reservationService } from '../../api';
-import { roomQueries } from 'services/room';
-
-const EQUIPMENT_LABELS: Record<string, string> = {
-  tv: 'TV',
-  whiteboard: '화이트보드',
-  video: '화상장비',
-  speaker: '스피커',
-};
+import { EQUIPMENT_LABELS, roomQueries } from 'services/room';
 
 interface MyReservationListProps {
   onCancelSuccess?: () => void;

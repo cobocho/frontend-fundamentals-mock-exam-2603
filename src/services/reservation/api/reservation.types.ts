@@ -1,10 +1,6 @@
 import { mutationResponseScheme } from 'services/common';
-import { roomScheme } from 'services/room/api/rooms.types';
+import { equipmentScheme, roomScheme } from 'services/room';
 import { z } from 'zod';
-
-export const equipmentScheme = z.enum(['tv', 'whiteboard', 'video', 'speaker']);
-
-export type Equipment = z.infer<typeof equipmentScheme>;
 
 export const reservationScheme = z.object({
   id: z.string(),
