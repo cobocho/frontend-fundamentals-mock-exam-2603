@@ -12,13 +12,12 @@ import { MessageBanner } from './components/MessageBanner';
 
 export function ReservationStatusPage() {
   const navigate = useNavigate();
-  const [date, setDate] = useState(formatDate(new Date()));
-
   const { locationMessage } = useLocationMessage();
 
-  const [message, setMessage] = useState<LocationMessage | null>(locationMessage);
-
   const { data: rooms } = useSuspenseQuery(roomQueries.list());
+
+  const [date, setDate] = useState(formatDate(new Date()));
+  const [message, setMessage] = useState<LocationMessage | null>(locationMessage);
 
   return (
     <div css={containerStyle}>

@@ -4,28 +4,22 @@ import { useState } from 'react';
 import { Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import type { Room } from 'services/room/api';
+import { EQUIPMENT_LABELS } from 'services/room';
 import { reservationQueries } from '../../api';
+import { DEFAULT_RESERVATION_START_TIME, DEFAULT_RESERVATION_END_TIME } from '../../constants/config';
+import { parseTimeToMinutes } from '../ReservationSearchForm/ReservationSearchForm.lib';
+import { timeToMinutes } from 'utils/date';
 
-const EQUIPMENT_LABELS: Record<string, string> = {
-  tv: 'TV',
-  whiteboard: '화이트보드',
-  video: '화상장비',
-  speaker: '스피커',
-};
-
-const TIMELINE_START = 9;
-const TIMELINE_END = 20;
-const TOTAL_MINUTES = (TIMELINE_END - TIMELINE_START) * 60;
+const TIMELINE_START = parseTimeToMinutes(DEFAULT_RESERVATION_START_TIME);
+const TIMELINE_END = parseTimeToMinutes(DEFAULT_RESERVATION_END_TIME);
+const TOTAL_MINUTES = TIMELINE_END - TIMELINE_START;
+const TIMELINE_START_HOUR = parseInt(DEFAULT_RESERVATION_START_TIME.split(':')[0], 10);
+const TIMELINE_END_HOUR = parseInt(DEFAULT_RESERVATION_END_TIME.split(':')[0], 10);
 
 const HOUR_LABELS = Array.from(
-  { length: TIMELINE_END - TIMELINE_START + 1 },
-  (_, i) => `${String(TIMELINE_START + i).padStart(2, '0')}:00`
+  { length: TIMELINE_END_HOUR - TIMELINE_START_HOUR + 1 },
+  (_, i) => `${String(TIMELINE_START_HOUR + i).padStart(2, '0')}:00`
 );
-
-function timeToMinutes(time: string): number {
-  const [h, m] = time.split(':').map(Number);
-  return (h - TIMELINE_START) * 60 + m;
-}
 
 interface RoomTimelineProps {
   rooms: Room[];
@@ -43,7 +37,7 @@ export const RoomTimeline = ({ rooms, date }: RoomTimelineProps) => {
         <div css={roomLabelSpacerStyle} />
         <div css={barContainerStyle}>
           {HOUR_LABELS.map(t => {
-            const left = (timeToMinutes(t) / TOTAL_MINUTES) * 100;
+            const left = (timeToMinutes(t, TIMELINE_START_HOUR) / TOTAL_MINUTES) * 100;
             return (
               <Text key={t} typography="t7" fontWeight="regular" color={colors.grey400} css={hourLabelStyle(left)}>
                 {t.slice(0, 2)}
@@ -71,8 +65,11 @@ export const RoomTimeline = ({ rooms, date }: RoomTimelineProps) => {
             </div>
             <div css={trackStyle}>
               {roomReservations.map(res => {
-                const left = (timeToMinutes(res.start) / TOTAL_MINUTES) * 100;
-                const width = ((timeToMinutes(res.end) - timeToMinutes(res.start)) / TOTAL_MINUTES) * 100;
+                const left = (timeToMinutes(res.start, TIMELINE_START_HOUR) / TOTAL_MINUTES) * 100;
+                const width =
+                  ((timeToMinutes(res.end, TIMELINE_START_HOUR) - timeToMinutes(res.start, TIMELINE_START_HOUR)) /
+                    TOTAL_MINUTES) *
+                  100;
                 const isActive = activeReservation === res.id;
                 return (
                   <div key={res.id} css={slotStyle(left, width)}>
@@ -89,7 +86,7 @@ export const RoomTimeline = ({ rooms, date }: RoomTimelineProps) => {
                         </div>
                         <div>{res.attendees}명</div>
                         {res.equipment.length > 0 && (
-                          <div>{res.equipment.map((e: string) => EQUIPMENT_LABELS[e]).join(', ')}</div>
+                          <div>{res.equipment.map(e => EQUIPMENT_LABELS[e]).join(', ')}</div>
                         )}
                       </div>
                     )}

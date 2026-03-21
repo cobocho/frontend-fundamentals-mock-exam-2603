@@ -29,9 +29,7 @@ export const MyReservationList = ({ onCancelSuccess, onCancelError }: MyReservat
       queryClient.invalidateQueries({ queryKey: reservationQueries.all() });
       onCancelSuccess?.();
     },
-    onError: () => {
-      onCancelError?.();
-    },
+    onError: onCancelError,
   });
 
   const handleCancel = (id: string) => {
@@ -42,13 +40,15 @@ export const MyReservationList = ({ onCancelSuccess, onCancelError }: MyReservat
 
   const getRoomName = (roomId: string) => rooms.find(r => r.id === roomId)?.name ?? roomId;
 
+  const isEmpty = myReservationList.length === 0;
+
   return (
     <div>
       <div css={headerStyle}>
         <Text typography="t5" fontWeight="bold" color={colors.grey900}>
           내 예약
         </Text>
-        {myReservationList.length > 0 && (
+        {!isEmpty && (
           <Text typography="t7" fontWeight="medium" color={colors.grey500}>
             {myReservationList.length}건
           </Text>
@@ -56,12 +56,8 @@ export const MyReservationList = ({ onCancelSuccess, onCancelError }: MyReservat
       </div>
       <Spacing size={16} />
 
-      {myReservationList.length === 0 ? (
-        <div css={emptyStateStyle}>
-          <Text typography="t6" color={colors.grey500}>
-            예약 내역이 없습니다.
-          </Text>
-        </div>
+      {isEmpty ? (
+        blankState
       ) : (
         <div css={listStyle}>
           {myReservationList.map(res => (
@@ -99,17 +95,25 @@ export const MyReservationList = ({ onCancelSuccess, onCancelError }: MyReservat
   );
 };
 
+const blankState = (
+  <div
+    css={css`
+      padding: 40px 0;
+      text-align: center;
+      background: ${colors.grey50};
+      border-radius: 14px;
+    `}
+  >
+    <Text typography="t6" color={colors.grey500}>
+      예약 내역이 없습니다.
+    </Text>
+  </div>
+);
+
 const headerStyle = css`
   display: flex;
   align-items: baseline;
   gap: 6px;
-`;
-
-const emptyStateStyle = css`
-  padding: 40px 0;
-  text-align: center;
-  background: ${colors.grey50};
-  border-radius: 14px;
 `;
 
 const listStyle = css`
