@@ -5,12 +5,17 @@ import App from './App';
 import { server } from './_tosslib/server/browser';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-server.start({ onUnhandledRequest: 'bypass' });
+const main = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    await server.start({ onUnhandledRequest: 'bypass' });
+  }
+  createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <Router>
+        <App />
+      </Router>
+    </React.StrictMode>
+  );
+};
 
-createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <Router>
-      <App />
-    </Router>
-  </React.StrictMode>
-);
+main();
