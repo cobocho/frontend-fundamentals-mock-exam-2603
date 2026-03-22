@@ -243,9 +243,12 @@ const inputStyle = css`
   border-radius: 12px;
   color: ${colors.grey800};
   width: 100%;
+  max-width: 100%;
   border: 1px solid ${colors.grey200};
   padding: 0 16px;
   outline: none;
+  -webkit-appearance: none;
+  appearance: none;
   transition: border-color 0.15s;
   &:focus {
     border-color: ${colors.blue500};
