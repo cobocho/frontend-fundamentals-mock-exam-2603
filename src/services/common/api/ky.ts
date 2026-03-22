@@ -5,13 +5,6 @@ import { createHttpError, HttpTimeoutError } from './errors';
 
 export const KyInstance = ky.create({
   prefixUrl: API_URL,
-  hooks: {
-    beforeRequest: [
-      request => {
-        console.log('URL: ', request.url, 'Timestamp: ', new Date().toISOString());
-      },
-    ],
-  },
 });
 
 function toKyOptions(options?: HttpRequestOptions) {
