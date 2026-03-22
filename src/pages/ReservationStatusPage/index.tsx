@@ -9,6 +9,7 @@ import { RoomTimeline, MyReservationList } from 'services/reservation';
 import { useLocationMessage } from 'hooks/useLocationMessage';
 import { formatDate } from 'utils/date';
 import { MessageBanner } from './components/MessageBanner';
+import { BottomFloat } from 'components/BottomFloat';
 
 export function ReservationStatusPage() {
   const navigate = useNavigate();
@@ -74,17 +75,14 @@ export function ReservationStatusPage() {
         />
       </div>
 
-      <Spacing size={24} />
-      <Border size={8} />
-      <Spacing size={24} />
+      <Spacing size={80} />
 
       {/* 예약하기 버튼 */}
-      <div css={sectionStyle}>
+      <BottomFloat>
         <Button display="full" onClick={() => navigate('/booking')}>
           예약하기
         </Button>
-      </div>
-      <Spacing size={24} />
+      </BottomFloat>
     </div>
   );
 }

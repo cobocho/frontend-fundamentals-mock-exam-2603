@@ -11,6 +11,7 @@ import { AvailableRoomList } from './components/AvailableRoomList';
 import { Suspense, useState } from 'react';
 import { HttpError } from 'services/common';
 import { useLocationMessage } from 'hooks/useLocationMessage';
+import { BottomFloat } from 'components/BottomFloat';
 
 export function RoomBookingPage() {
   const navigate = useNavigate();
@@ -99,31 +100,36 @@ export function RoomBookingPage() {
               selectedRoomId={selectedRoom?.id}
               onSelect={setSelectedRoom}
             />
-            <Spacing size={16} />
-            <Button
-              display="full"
-              onClick={() => {
-                if (!selectedRoom) {
-                  setErrorMessage('회의실을 선택해주세요.');
-                  return;
-                }
-
-                createMutation.mutate({
-                  roomId: selectedRoom!.id,
-                  date: filters.date,
-                  start: filters.start!,
-                  end: filters.end!,
-                  attendees: filters.attendees,
-                  equipment: filters.equipment,
-                });
-              }}
-              disabled={createMutation.isPending || !isValid}
-            >
-              {createMutation.isPending ? '예약 중...' : '확정'}
-            </Button>
+            <Spacing size={80} />
           </div>
         )}
       </Suspense>
+
+      {isValid && selectedRoom && (
+        <BottomFloat>
+          <Button
+            display="full"
+            onClick={() => {
+              if (!selectedRoom) {
+                setErrorMessage('회의실을 선택해주세요.');
+                return;
+              }
+
+              createMutation.mutate({
+                roomId: selectedRoom!.id,
+                date: filters.date,
+                start: filters.start!,
+                end: filters.end!,
+                attendees: filters.attendees,
+                equipment: filters.equipment,
+              });
+            }}
+            disabled={createMutation.isPending || !isValid}
+          >
+            {createMutation.isPending ? '예약 중...' : '확정'}
+          </Button>
+        </BottomFloat>
+      )}
     </div>
   );
 }
