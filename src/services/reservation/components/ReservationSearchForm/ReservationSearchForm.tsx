@@ -15,7 +15,7 @@ import {
   DEFAULT_RESERVATION_TIME_STEP,
   MIN_ATTENDEES,
 } from '../../constants/config';
-import { reservationSearchScheme, type ReservationSearchScheme } from '../../hooks/useReservationSearchFilters';
+import { reservationSearchScheme, type ReservationSearch } from '../../hooks/useReservationSearchFilters';
 
 export interface ReservationSearchFormProps {
   floors: number[];
@@ -24,7 +24,7 @@ export interface ReservationSearchFormProps {
     endTime: string;
     timeStep: number;
   };
-  initialValues?: Partial<ReservationSearchScheme>;
+  initialValues?: Partial<ReservationSearch>;
   onChange: ({ isValid, values }: { isValid: boolean; values: z.infer<typeof reservationSearchScheme> }) => void;
 }
 
@@ -77,7 +77,7 @@ export const ReservationSearchForm = ({
   };
 
   const changeTime = (name: 'start' | 'end', value: string) => {
-    form.setValue(name, value === '' ? null : value);
+    form.setValue(name, value);
     form.trigger();
   };
 

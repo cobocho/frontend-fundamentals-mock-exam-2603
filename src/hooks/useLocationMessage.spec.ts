@@ -39,26 +39,34 @@ describe('useLocationMessage', () => {
     expect(window.history.replaceState).toHaveBeenCalledWith({}, '');
   });
 
-  test('error로 에러 메시지를 설정할 수 있다', () => {
+  test('setErrorMessage로 에러 메시지를 설정할 수 있다', () => {
     const { result } = renderHook(() => useLocationMessage());
 
     act(() => {
-      result.current.error('오류가 발생했습니다.');
+      result.current.setErrorMessage('오류가 발생했습니다.');
     });
 
     expect(result.current.message).toEqual({ text: '오류가 발생했습니다.', type: 'error' });
   });
 
-  test('success로 성공 메시지를 설정하고 반환값을 navigate state로 사용할 수 있다', () => {
+  test('setSuccessMessage로 성공 메시지를 설정할 수 있다', () => {
     const { result } = renderHook(() => useLocationMessage());
 
-    let returnValue: unknown;
     act(() => {
-      returnValue = result.current.success('예약이 완료되었습니다!');
+      result.current.setSuccessMessage('예약이 완료되었습니다!');
     });
 
-    expect(returnValue).toEqual({ text: '예약이 완료되었습니다!', type: 'success' });
     expect(result.current.message).toEqual({ text: '예약이 완료되었습니다!', type: 'success' });
+  });
+
+  test('createMessage로 navigate state 객체를 생성할 수 있다', () => {
+    const { result } = renderHook(() => useLocationMessage());
+
+    const msg = result.current.createMessage('success', '예약 완료!');
+
+    expect(msg).toEqual({ text: '예약 완료!', type: 'success' });
+    // createMessage는 로컬 state를 변경하지 않는다
+    expect(result.current.message).toBeNull();
   });
 
   test('clearMessage로 메시지를 초기화할 수 있다', () => {
@@ -73,7 +81,7 @@ describe('useLocationMessage', () => {
     expect(result.current.message).toBeNull();
   });
 
-  test('type을 지정하지 않으면 기본값 success로 설정된다', () => {
+  test('type을 지정하지 않으면 기본값 setSuccessMessage로 설정된다', () => {
     mockLocation.state = { text: '예약이 완료되었습니다.' };
 
     const { result } = renderHook(() => useLocationMessage());

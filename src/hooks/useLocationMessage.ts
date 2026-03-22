@@ -20,21 +20,22 @@ export function useLocationMessage() {
     }
   }, [locationState]);
 
-  const success = useCallback((text: string): LocationMessage => {
-    const msg: LocationMessage = { text, type: 'success' };
-    setMessage(msg);
-    return msg;
+  const setSuccessMessage = useCallback((text: string) => {
+    setMessage({ text, type: 'success' });
   }, []);
 
-  const error = useCallback((text: string): LocationMessage => {
-    const msg: LocationMessage = { text, type: 'error' };
-    setMessage(msg);
-    return msg;
+  const setErrorMessage = useCallback((text: string) => {
+    setMessage({ text, type: 'error' });
   }, []);
 
   const clearMessage = useCallback(() => {
     setMessage(null);
   }, []);
 
-  return { message, success, error, clearMessage };
+  const createMessage = (type: 'success' | 'error', text: string): LocationMessage => ({
+    text,
+    type,
+  });
+
+  return { message, setSuccessMessage, setErrorMessage, clearMessage, createMessage };
 }

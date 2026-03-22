@@ -15,7 +15,7 @@ import { useLocationMessage } from 'hooks/useLocationMessage';
 export function RoomBookingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { message, error, success, clearMessage } = useLocationMessage();
+  const { message, setErrorMessage, clearMessage, createMessage } = useLocationMessage();
 
   const { filters, isValid, setFilter } = useReservationSearchFilters();
 
@@ -24,11 +24,11 @@ export function RoomBookingPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: reservationQueries.all() });
       setSelectedRoom(null);
-      navigate('/', { state: success('예약이 완료되었습니다!') });
+      navigate('/', { state: createMessage('success', '예약이 완료되었습니다!') });
     },
     onError: error => {
       if (error instanceof HttpError) {
-        error(error.message);
+        setErrorMessage(error.message);
       }
     },
   });
@@ -104,7 +104,7 @@ export function RoomBookingPage() {
               display="full"
               onClick={() => {
                 if (!selectedRoom) {
-                  error('회의실을 선택해주세요.');
+                  setErrorMessage('회의실을 선택해주세요.');
                   return;
                 }
 

@@ -12,7 +12,7 @@ import { MessageBanner } from './components/MessageBanner';
 
 export function ReservationStatusPage() {
   const navigate = useNavigate();
-  const { message, success, error } = useLocationMessage();
+  const { message, setSuccessMessage, setErrorMessage } = useLocationMessage();
 
   const { data: rooms } = useSuspenseQuery(roomQueries.list());
 
@@ -69,8 +69,8 @@ export function ReservationStatusPage() {
       {/* 내 예약 목록 */}
       <div css={sectionStyle}>
         <MyReservationList
-          onCancelSuccess={() => success('예약이 취소되었습니다.')}
-          onCancelError={() => error('취소에 실패했습니다.')}
+          onCancelSuccess={() => setSuccessMessage('예약이 취소되었습니다.')}
+          onCancelError={() => setErrorMessage('취소에 실패했습니다.')}
         />
       </div>
 
