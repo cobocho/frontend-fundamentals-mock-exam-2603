@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Equipment } from '../../api/reservation.types';
+import type { Equipment } from 'services/room';
 import { z } from 'zod';
 import { Form, FormField, FormItem, FormLabel } from 'components/Form';
 import { css } from '@emotion/react';

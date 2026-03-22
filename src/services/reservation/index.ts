@@ -1,5 +1,4 @@
 export type {
-  Equipment,
   Reservation,
   GetReservationsRequest,
   GetReservationsResponse,
