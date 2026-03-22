@@ -1,10 +1,8 @@
 import { css } from '@emotion/react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSuspenseQuery } from '@tanstack/react-query';
 import { Top, Spacing, Border, Button, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-import { roomQueries } from 'services/room';
 import { RoomTimeline, MyReservationList } from 'services/reservation';
 import { useLocationMessage } from 'hooks/useLocationMessage';
 import { formatDate } from 'utils/date';
@@ -14,8 +12,6 @@ import { BottomFloat } from 'components/BottomFloat';
 export function ReservationStatusPage() {
   const navigate = useNavigate();
   const { message, setSuccessMessage, setErrorMessage } = useLocationMessage();
-
-  const { data: rooms } = useSuspenseQuery(roomQueries.list());
 
   const [date, setDate] = useState(formatDate(new Date()));
 
@@ -53,7 +49,7 @@ export function ReservationStatusPage() {
           예약 현황
         </Text>
         <Spacing size={16} />
-        {date && <RoomTimeline rooms={rooms} date={date} />}
+        {date && <RoomTimeline date={date} />}
       </div>
 
       <Spacing size={24} />
@@ -117,12 +113,9 @@ const dateInputStyle = css`
   border-radius: 12px;
   color: ${colors.grey800};
   width: 100%;
-  max-width: 100%;
   border: 1px solid ${colors.grey200};
   padding: 0 16px;
   outline: none;
-  -webkit-appearance: none;
-  appearance: none;
   transition: border-color 0.15s;
   &:focus {
     border-color: ${colors.blue500};

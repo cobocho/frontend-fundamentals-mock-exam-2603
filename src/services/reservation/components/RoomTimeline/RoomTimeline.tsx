@@ -5,10 +5,11 @@ import { Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import type { Room } from 'services/room/api';
 import { EQUIPMENT_LABELS } from 'services/room';
-import { reservationQueries } from '../../api';
+import { reservationQueries } from 'services/reservation';
 import { DEFAULT_RESERVATION_START_TIME, DEFAULT_RESERVATION_END_TIME } from '../../constants/config';
 import { parseTimeToMinutes } from '../ReservationSearchForm/ReservationSearchForm.lib';
 import { timeToMinutes } from 'utils/date';
+import { roomQueries } from 'services/room';
 
 const TIMELINE_START = parseTimeToMinutes(DEFAULT_RESERVATION_START_TIME);
 const TIMELINE_END = parseTimeToMinutes(DEFAULT_RESERVATION_END_TIME);
@@ -22,12 +23,13 @@ const HOUR_LABELS = Array.from(
 );
 
 interface RoomTimelineProps {
-  rooms: Room[];
   date: string;
 }
 
-export const RoomTimeline = ({ rooms, date }: RoomTimelineProps) => {
+export const RoomTimeline = ({ date }: RoomTimelineProps) => {
   const { data: reservations } = useSuspenseQuery(reservationQueries.list({ date }));
+  const { data: rooms } = useSuspenseQuery(roomQueries.list());
+
   const [activeReservation, setActiveReservation] = useState<string | null>(null);
 
   return (

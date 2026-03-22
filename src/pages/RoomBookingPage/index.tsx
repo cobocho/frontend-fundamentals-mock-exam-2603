@@ -34,8 +34,6 @@ export function RoomBookingPage() {
     },
   });
 
-  const { data: rooms } = useSuspenseQuery(roomQueries.list());
-
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
   return (
@@ -65,7 +63,6 @@ export function RoomBookingPage() {
         </Text>
         <Spacing size={16} />
         <ReservationSearchForm
-          floors={getFloorsByRooms(rooms)}
           onChange={({ values }) => {
             setFilter({
               date: values.date,
@@ -94,18 +91,13 @@ export function RoomBookingPage() {
       <Suspense>
         {isValid && (
           <div css={contentStyle}>
-            <AvailableRoomList
-              rooms={rooms}
-              filters={filters}
-              selectedRoomId={selectedRoom?.id}
-              onSelect={setSelectedRoom}
-            />
+            <AvailableRoomList filters={filters} selectedRoomId={selectedRoom?.id} onSelect={setSelectedRoom} />
             <Spacing size={80} />
           </div>
         )}
       </Suspense>
 
-      {isValid && selectedRoom && (
+      {isValid && (
         <BottomFloat>
           <Button
             display="full"

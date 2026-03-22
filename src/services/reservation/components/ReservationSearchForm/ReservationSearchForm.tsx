@@ -6,7 +6,7 @@ import { Form, FormField, FormItem, FormLabel } from 'components/Form';
 import { css } from '@emotion/react';
 import { Select, Spacing } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-import { useEffect, useEffectEvent, useMemo, useRef } from 'react';
+import { useEffect, useEffectEvent, useMemo } from 'react';
 import { getTimeOptions, getToday } from './ReservationSearchForm.lib';
 import { EQUIPMENT_OPTIONS } from 'services/room/constants';
 import {
@@ -16,9 +16,11 @@ import {
   MIN_ATTENDEES,
 } from '../../constants/config';
 import { reservationSearchScheme, type ReservationSearch } from '../../hooks/useReservationSearchFilters';
+import { roomQueries } from 'services/room';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { getFloorsByRooms } from 'services/room/libs';
 
 export interface ReservationSearchFormProps {
-  floors: number[];
   availableTime?: {
     startTime: string;
     endTime: string;
@@ -29,7 +31,6 @@ export interface ReservationSearchFormProps {
 }
 
 export const ReservationSearchForm = ({
-  floors,
   availableTime = {
     startTime: DEFAULT_RESERVATION_START_TIME,
     endTime: DEFAULT_RESERVATION_END_TIME,
@@ -38,7 +39,9 @@ export const ReservationSearchForm = ({
   initialValues,
   onChange,
 }: ReservationSearchFormProps) => {
-  const sortedFloors = useMemo(() => [...floors].sort((a, b) => a - b), [floors]);
+  const { data: rooms } = useSuspenseQuery(roomQueries.list());
+
+  const floors = useMemo(() => getFloorsByRooms(rooms), [rooms]);
 
   const form = useForm({
     resolver: zodResolver(reservationSearchScheme),
@@ -192,7 +195,7 @@ export const ReservationSearchForm = ({
                   aria-label="선호 층"
                 >
                   <option value="">전체</option>
-                  {sortedFloors.map(f => (
+                  {floors.map(f => (
                     <option key={f} value={f}>
                       {f}층
                     </option>

@@ -7,5 +7,7 @@ export const roomQueries = {
     queryOptions({
       queryKey: [...roomQueries.all(), 'list'],
       queryFn: roomService.getRooms,
+      staleTime: 1000 * 60,
+      gcTime: 1000 * 60,
     }),
 };
