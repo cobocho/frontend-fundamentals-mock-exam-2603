@@ -53,7 +53,7 @@ export function ReservationStatusPage() {
           예약 현황
         </Text>
         <Spacing size={16} />
-        <RoomTimeline rooms={rooms} date={date} />
+        {date && <RoomTimeline rooms={rooms} date={date} />}
       </div>
 
       <Spacing size={24} />

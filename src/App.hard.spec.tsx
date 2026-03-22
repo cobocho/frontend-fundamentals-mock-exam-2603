@@ -1,16 +1,19 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { describe, test, expect, afterEach, vi } from 'vitest';
 import App from './App';
-import * as remotes from 'pages/remotes';
+import { reservationService } from 'services/reservation';
 
 describe('예약 현황 심화', () => {
   afterEach(() => {
+    cleanup();
     vi.restoreAllMocks();
+    window.history.replaceState({}, '', '/');
   });
 
   function renderApp(route = '/') {
+    window.history.replaceState({}, '', route);
     return render(
       <MemoryRouter initialEntries={[route]}>
         <App />
@@ -42,10 +45,13 @@ describe('예약 현황 심화', () => {
 
 describe('예약하기 심화', () => {
   afterEach(() => {
+    cleanup();
     vi.restoreAllMocks();
+    window.history.replaceState({}, '', '/');
   });
 
   function renderApp(route = '/booking') {
+    window.history.replaceState({}, '', route);
     return render(
       <MemoryRouter initialEntries={[route]}>
         <App />
@@ -90,7 +96,7 @@ describe('예약하기 심화', () => {
   });
 
   test('예약 성공 후 예약 현황이 갱신된다', async () => {
-    const spyGetReservations = vi.spyOn(remotes, 'getReservations');
+    const spyGetReservations = vi.spyOn(reservationService, 'getReservations');
 
     renderApp();
     await waitForPageLoad();

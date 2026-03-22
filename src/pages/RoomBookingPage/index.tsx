@@ -69,9 +69,11 @@ export function RoomBookingPage() {
           floors={getFloorsByRooms(rooms)}
           onChange={({ values }) => {
             setFilter({
-              ...values,
-              start: values.start || null,
-              end: values.end || null,
+              date: values.date,
+              startTime: values.start || null,
+              endTime: values.end || null,
+              attendees: values.attendees,
+              equipment: values.equipment,
               preferredFloor: values.preferredFloor || null,
             });
             setBookingError(null);

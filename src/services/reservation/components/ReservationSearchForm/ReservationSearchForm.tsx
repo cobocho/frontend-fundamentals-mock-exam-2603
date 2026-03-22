@@ -215,6 +215,7 @@ export const ReservationSearchForm = ({
                     <button
                       key={value}
                       type="button"
+                      aria-label={label}
                       css={equipmentToggleStyle(field.value.includes(value))}
                       onClick={() => toggleEquipment(value)}
                     >

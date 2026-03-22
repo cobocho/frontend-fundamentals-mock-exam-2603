@@ -38,8 +38,8 @@ export type ReservationSearch = z.infer<typeof reservationSearchScheme>;
 
 const queryStatesConfig = {
   date: parseAsString.withDefault(formatDate(new Date())),
-  start: parseAsString,
-  end: parseAsString,
+  startTime: parseAsString,
+  endTime: parseAsString,
   attendees: parseAsInteger.withDefault(1),
   equipment: parseAsArrayOf(parseAsString).withDefault([]),
   preferredFloor: parseAsInteger,
@@ -49,9 +49,12 @@ export function useReservationSearchFilters() {
   const [queryStates, setFilter] = useQueryStates(queryStatesConfig);
 
   const filters = {
-    ...queryStates,
+    date: queryStates.date,
+    start: queryStates.startTime,
+    end: queryStates.endTime,
     attendees: queryStates.attendees < MIN_ATTENDEES ? MIN_ATTENDEES : queryStates.attendees,
     equipment: queryStates.equipment.filter((e): e is Equipment => equipmentScheme.safeParse(e).success),
+    preferredFloor: queryStates.preferredFloor,
   };
 
   const parsed = reservationSearchScheme.safeParse(filters);

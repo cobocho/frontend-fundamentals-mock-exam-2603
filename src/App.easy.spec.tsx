@@ -1,16 +1,20 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import { describe, test, expect, afterEach, vi } from 'vitest';
 import App from './App';
-import * as remotes from 'pages/remotes';
+import { roomService } from 'services/room';
+import { reservationService } from 'services/reservation';
 
 describe('예약 현황 페이지', () => {
   afterEach(() => {
+    cleanup();
     vi.restoreAllMocks();
+    window.history.replaceState({}, '', '/');
   });
 
   function renderApp(route = '/') {
+    window.history.replaceState({}, '', route);
     return render(
       <MemoryRouter initialEntries={[route]}>
         <App />
@@ -23,8 +27,8 @@ describe('예약 현황 페이지', () => {
   }
 
   test('회의실 목록과 예약 현황을 불러온다', async () => {
-    const spyGetRooms = vi.spyOn(remotes, 'getRooms');
-    const spyGetReservations = vi.spyOn(remotes, 'getReservations');
+    const spyGetRooms = vi.spyOn(roomService, 'getRooms');
+    const spyGetReservations = vi.spyOn(reservationService, 'getReservations');
 
     renderApp();
 
@@ -41,7 +45,7 @@ describe('예약 현황 페이지', () => {
   });
 
   test('날짜를 변경하면 해당 날짜의 예약 현황을 다시 불러온다', async () => {
-    const spyGetReservations = vi.spyOn(remotes, 'getReservations');
+    const spyGetReservations = vi.spyOn(reservationService, 'getReservations');
 
     renderApp();
     await waitForPageLoad();
@@ -51,12 +55,14 @@ describe('예약 현황 페이지', () => {
     await userEvent.type(dateInput, '2026-03-15');
 
     await waitFor(() =>
-      expect(spyGetReservations).toHaveBeenCalledWith('2026-03-15')
+      expect(spyGetReservations).toHaveBeenCalledWith(
+        expect.objectContaining({ date: '2026-03-15' })
+      )
     );
   });
 
   test('내 예약 목록이 표시된다', async () => {
-    const spyGetMyReservations = vi.spyOn(remotes, 'getMyReservations');
+    const spyGetMyReservations = vi.spyOn(reservationService, 'getMyReservations');
 
     renderApp();
 
@@ -65,7 +71,7 @@ describe('예약 현황 페이지', () => {
   });
 
   test('예약을 취소하면 확인 후 목록에서 제거된다', async () => {
-    const spyCancelReservation = vi.spyOn(remotes, 'cancelReservation');
+    const spyCancelReservation = vi.spyOn(reservationService, 'deleteReservation');
     vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     renderApp();
@@ -83,7 +89,7 @@ describe('예약 현황 페이지', () => {
   });
 
   test('예약 취소 확인 다이얼로그에서 거부하면 취소되지 않는다', async () => {
-    const spyCancelReservation = vi.spyOn(remotes, 'cancelReservation');
+    const spyCancelReservation = vi.spyOn(reservationService, 'deleteReservation');
     vi.spyOn(window, 'confirm').mockReturnValue(false);
 
     renderApp();
@@ -124,10 +130,13 @@ describe('예약 현황 페이지', () => {
 
 describe('예약하기 페이지', () => {
   afterEach(() => {
+    cleanup();
     vi.restoreAllMocks();
+    window.history.replaceState({}, '', '/');
   });
 
   function renderApp(route = '/booking') {
+    window.history.replaceState({}, '', route);
     return render(
       <MemoryRouter initialEntries={[route]}>
         <App />
@@ -191,7 +200,7 @@ describe('예약하기 페이지', () => {
   });
 
   test('회의실을 선택하고 예약하면 성공 메시지가 표시된다', async () => {
-    const spyCreateReservation = vi.spyOn(remotes, 'createReservation');
+    const spyCreateReservation = vi.spyOn(reservationService, 'postReservation');
 
     renderApp();
     await waitForPageLoad();

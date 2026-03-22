@@ -34,10 +34,10 @@ describe('ReservationSearchForm', () => {
       .map(o => o.value)
       .filter(v => v !== '');
 
-    // 기본값: 09:00 ~ 18:00, 30분 간격 → 19개 옵션
+    // 기본값: 09:00 ~ 20:00, 30분 간격 → 23개 옵션
     expect(values[0]).toBe('09:00');
-    expect(values[values.length - 1]).toBe('18:00');
-    expect(values).toHaveLength(19);
+    expect(values[values.length - 1]).toBe('20:00');
+    expect(values).toHaveLength(23);
   });
 
   test('선호 층 옵션이 floors prop에 따라 정렬되어 생성된다', () => {
