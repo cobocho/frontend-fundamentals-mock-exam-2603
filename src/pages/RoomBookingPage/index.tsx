@@ -34,10 +34,6 @@ export function RoomBookingPage() {
     },
   });
 
-  if (isValid) {
-    queryClient.prefetchQuery(reservationQueries.list({ date: filters.date }));
-  }
-
   const { data: rooms } = useSuspenseQuery(roomQueries.list());
 
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -100,7 +96,7 @@ export function RoomBookingPage() {
             <AvailableRoomList
               rooms={rooms}
               filters={filters}
-              defaultSelectedRoomId={selectedRoom?.id}
+              selectedRoomId={selectedRoom?.id}
               onSelect={setSelectedRoom}
             />
             <Spacing size={16} />

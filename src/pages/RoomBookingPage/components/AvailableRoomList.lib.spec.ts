@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { byFloor, byMinCapacity, byEquipment, byAvailableTime, combineFilters } from './AvailableRoomList.lib';
+import { byFloor, byMinCapacity, byEquipment, byAvailableTime, combineFilters } from 'services/room/libs';
 import type { Room } from 'services/room/api';
 import type { Reservation } from 'services/reservation';
 

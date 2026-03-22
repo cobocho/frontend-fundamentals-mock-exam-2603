@@ -1,7 +1,7 @@
-import type { Room, Equipment } from 'services/room/api';
+import type { Room, Equipment } from '../api';
 import type { Reservation } from 'services/reservation';
 
-type RoomFilter = (room: Room) => boolean;
+export type RoomFilter = (room: Room) => boolean;
 
 export const byFloor =
   (floor: number): RoomFilter =>

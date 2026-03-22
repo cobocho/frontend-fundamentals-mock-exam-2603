@@ -1,24 +1,22 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
-import { GetReservationsRequest, reservationQueries, type ReservationSearch } from 'services/reservation';
+import { useMemo } from 'react';
+import { reservationQueries, type ReservationSearch } from 'services/reservation';
 import { RoomOption } from 'services/room';
 import type { Room } from 'services/room/api';
 import { css } from '@emotion/react';
 import { Spacing, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
-import { combineFilters, byFloor, byMinCapacity, byEquipment, byAvailableTime } from './AvailableRoomList.lib';
+import { combineFilters, byFloor, byMinCapacity, byEquipment, byAvailableTime } from 'services/room/libs';
 
 interface AvailableRoomListProps {
   rooms: Room[];
   filters: ReservationSearch;
-  defaultSelectedRoomId?: Room['id'] | null;
+  selectedRoomId?: Room['id'] | null;
   onSelect: (room: Room) => void;
 }
 
-export const AvailableRoomList = ({ rooms, filters, defaultSelectedRoomId, onSelect }: AvailableRoomListProps) => {
+export const AvailableRoomList = ({ rooms, filters, selectedRoomId, onSelect }: AvailableRoomListProps) => {
   const { data: reservations } = useSuspenseQuery(reservationQueries.list({ date: filters.date }));
-
-  const [selectedRoomId, setSelectedRoomId] = useState(defaultSelectedRoomId);
 
   const availableRooms = useMemo(() => {
     const activeFilters = [byMinCapacity(filters.attendees), byAvailableTime(reservations, filters.start, filters.end)];
@@ -51,10 +49,7 @@ export const AvailableRoomList = ({ rooms, filters, defaultSelectedRoomId, onSel
             key={room.id}
             room={room}
             isSelected={selectedRoomId === room.id}
-            onSelect={room => {
-              setSelectedRoomId(room.id);
-              onSelect(room);
-            }}
+            onSelect={onSelect}
           />
         ))}
       </div>

@@ -1,6 +1,8 @@
 import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
 import { z } from 'zod';
-import { equipmentScheme, postReservationRequestScheme, type Equipment } from '../api/reservation.types';
+import { postReservationRequestScheme } from '../api/reservation.types';
+import { equipmentScheme } from 'services/room';
+import type { Equipment } from 'services/room';
 import { isBeforeThan } from '../components/ReservationSearchForm/ReservationSearchForm.lib';
 import { MIN_ATTENDEES, MAX_ATTENDEES } from '../constants/config';
 import { formatDate } from 'utils/date';
@@ -46,12 +48,9 @@ const queryStatesConfig = {
 export function useReservationSearchFilters() {
   const [queryStates, setFilter] = useQueryStates(queryStatesConfig);
 
-  if (queryStates.attendees < MIN_ATTENDEES) {
-    setFilter({ attendees: null });
-  }
-
   const filters = {
     ...queryStates,
+    attendees: queryStates.attendees < MIN_ATTENDEES ? MIN_ATTENDEES : queryStates.attendees,
     equipment: queryStates.equipment.filter((e): e is Equipment => equipmentScheme.safeParse(e).success),
   };
 
