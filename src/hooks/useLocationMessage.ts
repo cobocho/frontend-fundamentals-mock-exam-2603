@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export interface LocationMessage {
@@ -10,7 +10,7 @@ export function useLocationMessage() {
   const location = useLocation();
   const locationState = location.state as { text?: string; type?: 'success' | 'error' } | null;
 
-  const [locationMessage] = useState<LocationMessage | null>(
+  const [message, setMessage] = useState<LocationMessage | null>(
     locationState?.text ? { text: locationState.text, type: locationState.type ?? 'success' } : null
   );
 
@@ -20,9 +20,21 @@ export function useLocationMessage() {
     }
   }, [locationState]);
 
-  const createLocationMessage = (type: 'success' | 'error', text: string) => {
-    return { text, type };
-  };
+  const success = useCallback((text: string): LocationMessage => {
+    const msg: LocationMessage = { text, type: 'success' };
+    setMessage(msg);
+    return msg;
+  }, []);
 
-  return { locationMessage, createLocationMessage };
+  const error = useCallback((text: string): LocationMessage => {
+    const msg: LocationMessage = { text, type: 'error' };
+    setMessage(msg);
+    return msg;
+  }, []);
+
+  const clearMessage = useCallback(() => {
+    setMessage(null);
+  }, []);
+
+  return { message, success, error, clearMessage };
 }

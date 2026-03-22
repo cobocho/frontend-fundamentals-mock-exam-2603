@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useLocationMessage } from './useLocationMessage';
 
 const mockLocation = { state: null as { text?: string; type?: 'success' | 'error' } | null, pathname: '/', search: '', hash: '', key: '' };
@@ -17,7 +17,7 @@ describe('useLocationMessage', () => {
   test('location state에 message가 없으면 null을 반환한다', () => {
     const { result } = renderHook(() => useLocationMessage());
 
-    expect(result.current.locationMessage).toBeNull();
+    expect(result.current.message).toBeNull();
   });
 
   test('location state에 text가 있으면 LocationMessage 객체를 반환한다', () => {
@@ -25,7 +25,7 @@ describe('useLocationMessage', () => {
 
     const { result } = renderHook(() => useLocationMessage());
 
-    expect(result.current.locationMessage).toEqual({
+    expect(result.current.message).toEqual({
       text: '예약이 완료되었습니다.',
       type: 'success',
     });
@@ -39,12 +39,38 @@ describe('useLocationMessage', () => {
     expect(window.history.replaceState).toHaveBeenCalledWith({}, '');
   });
 
-  test('createLocationMessage로 navigate state 객체를 생성할 수 있다', () => {
+  test('error로 에러 메시지를 설정할 수 있다', () => {
     const { result } = renderHook(() => useLocationMessage());
 
-    const message = result.current.createLocationMessage('error', '오류가 발생했습니다.');
+    act(() => {
+      result.current.error('오류가 발생했습니다.');
+    });
 
-    expect(message).toEqual({ text: '오류가 발생했습니다.', type: 'error' });
+    expect(result.current.message).toEqual({ text: '오류가 발생했습니다.', type: 'error' });
+  });
+
+  test('success로 성공 메시지를 설정하고 반환값을 navigate state로 사용할 수 있다', () => {
+    const { result } = renderHook(() => useLocationMessage());
+
+    let returnValue: unknown;
+    act(() => {
+      returnValue = result.current.success('예약이 완료되었습니다!');
+    });
+
+    expect(returnValue).toEqual({ text: '예약이 완료되었습니다!', type: 'success' });
+    expect(result.current.message).toEqual({ text: '예약이 완료되었습니다!', type: 'success' });
+  });
+
+  test('clearMessage로 메시지를 초기화할 수 있다', () => {
+    mockLocation.state = { text: '예약이 완료되었습니다.', type: 'success' };
+
+    const { result } = renderHook(() => useLocationMessage());
+
+    act(() => {
+      result.current.clearMessage();
+    });
+
+    expect(result.current.message).toBeNull();
   });
 
   test('type을 지정하지 않으면 기본값 success로 설정된다', () => {
@@ -52,7 +78,7 @@ describe('useLocationMessage', () => {
 
     const { result } = renderHook(() => useLocationMessage());
 
-    expect(result.current.locationMessage).toEqual({
+    expect(result.current.message).toEqual({
       text: '예약이 완료되었습니다.',
       type: 'success',
     });

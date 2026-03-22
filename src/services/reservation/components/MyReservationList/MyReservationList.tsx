@@ -13,6 +13,7 @@ interface MyReservationListProps {
 
 export const MyReservationList = ({ onCancelSuccess, onCancelError }: MyReservationListProps) => {
   const queryClient = useQueryClient();
+
   const { data: rooms } = useSuspenseQuery(roomQueries.list());
   const { data: myReservationList } = useSuspenseQuery(reservationQueries.myList());
 

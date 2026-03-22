@@ -6,18 +6,17 @@ import { Top, Spacing, Border, Button, Text } from '_tosslib/components';
 import { colors } from '_tosslib/constants/colors';
 import { roomQueries } from 'services/room';
 import { RoomTimeline, MyReservationList } from 'services/reservation';
-import { LocationMessage, useLocationMessage } from 'hooks/useLocationMessage';
+import { useLocationMessage } from 'hooks/useLocationMessage';
 import { formatDate } from 'utils/date';
 import { MessageBanner } from './components/MessageBanner';
 
 export function ReservationStatusPage() {
   const navigate = useNavigate();
-  const { locationMessage } = useLocationMessage();
+  const { message, success, error } = useLocationMessage();
 
   const { data: rooms } = useSuspenseQuery(roomQueries.list());
 
   const [date, setDate] = useState(formatDate(new Date()));
-  const [message, setMessage] = useState<LocationMessage | null>(locationMessage);
 
   return (
     <div css={containerStyle}>
@@ -70,8 +69,8 @@ export function ReservationStatusPage() {
       {/* 내 예약 목록 */}
       <div css={sectionStyle}>
         <MyReservationList
-          onCancelSuccess={() => setMessage({ text: '예약이 취소되었습니다.', type: 'success' })}
-          onCancelError={() => setMessage({ text: '취소에 실패했습니다.', type: 'error' })}
+          onCancelSuccess={() => success('예약이 취소되었습니다.')}
+          onCancelError={() => error('취소에 실패했습니다.')}
         />
       </div>
 

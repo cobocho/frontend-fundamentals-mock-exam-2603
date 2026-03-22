@@ -15,7 +15,7 @@ import { useLocationMessage } from 'hooks/useLocationMessage';
 export function RoomBookingPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { createLocationMessage } = useLocationMessage();
+  const { message, error, success, clearMessage } = useLocationMessage();
 
   const { filters, isValid, setFilter } = useReservationSearchFilters();
 
@@ -24,12 +24,11 @@ export function RoomBookingPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: reservationQueries.all() });
       setSelectedRoom(null);
-      setBookingError(null);
-      navigate('/', { state: createLocationMessage('success', '예약이 완료되었습니다!') });
+      navigate('/', { state: success('예약이 완료되었습니다!') });
     },
     onError: error => {
       if (error instanceof HttpError) {
-        setBookingError(error.message);
+        error(error.message);
       }
     },
   });
@@ -37,7 +36,6 @@ export function RoomBookingPage() {
   const { data: rooms } = useSuspenseQuery(roomQueries.list());
 
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-  const [bookingError, setBookingError] = useState<string | null>(null);
 
   return (
     <div css={containerStyle}>
@@ -48,12 +46,12 @@ export function RoomBookingPage() {
       </div>
       <Top.Top03 css={topStyle}>예약하기</Top.Top03>
 
-      {bookingError && (
+      {message && message.type === 'error' && (
         <div css={contentStyle}>
           <Spacing size={12} />
-          <div css={bookingErrorBoxStyle}>
+          <div css={errorBoxStyle}>
             <Text typography="t7" fontWeight="medium" color={colors.red500}>
-              {bookingError}
+              {message.text}
             </Text>
           </div>
         </div>
@@ -76,7 +74,7 @@ export function RoomBookingPage() {
               equipment: values.equipment,
               preferredFloor: values.preferredFloor || null,
             });
-            setBookingError(null);
+            clearMessage();
             setSelectedRoom(null);
           }}
           initialValues={{
@@ -106,7 +104,7 @@ export function RoomBookingPage() {
               display="full"
               onClick={() => {
                 if (!selectedRoom) {
-                  setBookingError('회의실을 선택해주세요.');
+                  error('회의실을 선택해주세요.');
                   return;
                 }
 
@@ -151,7 +149,7 @@ const goBackButtonStyle = css`
   }
 `;
 
-const bookingErrorBoxStyle = css`
+const errorBoxStyle = css`
   padding: 10px 14px;
   border-radius: 10px;
   background: ${colors.red50};
